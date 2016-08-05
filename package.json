@@ -4,15 +4,19 @@
   "description": "A utility for animating text in HTML documents to simulate REPL interactions.",
   "main": "src/repl-sim.js",
   "scripts": {
+    "build": "npm run build-max && npm run build-min",
+    "build-max": "webpack --config build/webpack.config.js",
+    "build-min": "webpack --config build/webpack.config.min.js",
     "test": "npm run lint && npm run style",
-    "lint": "jshint src/*",
-    "style": "jscs src/*"
+    "lint": "jshint build/ src/",
+    "style": "jscs build/ src/"
   },
   "author": "Mike Pennisi",
   "license": "GPL-3.0",
   "devDependencies": {
     "jscs": "^3.0.7",
     "jshint": "^2.9.2",
-    "requirejs": "^2.2.0"
+    "requirejs": "^2.2.0",
+    "webpack": "^1.13.1"
   }
 }
