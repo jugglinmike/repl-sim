@@ -1,4 +1,4 @@
-require(['../src/typer'], function(typer) {
+require(['../src/repl-sim'], function(typer) {
   'use strict';
   var terminals = document.getElementsByClassName('terminal');
   var config = {

@@ -85,11 +85,8 @@ define(function(require, exports, module) {
     if (typeof repeatCount !== 'number') {
       repeatCount = defaults.repeatCount;
     }
-    function trim(str) {
-      return str.replace(/^\n+|\n+$/g, '');
-    }
     var code = innerText.get(el) || '';
-    var lines = trim(code).split('\n');
+    var lines = code.split('\n');
 
     var cursorNode = document.createElement('span');
     cursorNode.innerHTML = '&nbsp;';

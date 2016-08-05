@@ -1,4 +1,4 @@
-# Typer
+# ReplSim
 
 A utility for animating text in HTML documents to simulate REPL interactions.
 
