@@ -1,0 +1,18 @@
+{
+  "name": "typer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "typer.js",
+  "scripts": {
+    "test": "npm run lint && npm run style",
+    "lint": "jshint src/*",
+    "style": "jscs src/*"
+  },
+  "author": "Mike Pennisi",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "jscs": "^3.0.7",
+    "jshint": "^2.9.2",
+    "requirejs": "^2.2.0"
+  }
+}

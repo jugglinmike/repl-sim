@@ -1,0 +1,41 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+main {
+  padding: 1em;
+}
+
+code {
+  position: relative;
+  margin: 0;
+  padding: 0.7em 1em;
+  display: block;
+
+  background-color: #333;
+  color: #eee;
+  outline: solid 1px #ddd;
+
+  font-size: 3em;
+  overflow-x: auto;
+}
+pre {
+  background-color: inherit;
+  margin: 0;
+}
+code button {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+
+  opacity: 0;
+  transition: 0.3s opacity;
+}
+code:hover button {
+  opacity: 1;
+}

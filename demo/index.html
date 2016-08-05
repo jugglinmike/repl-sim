@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <title>Typer</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="../node_modules/requirejs/require.js"></script>
+  </head>
+  <body>
+
+  <main>
+  <code class='terminal'>
+    <pre>$ this is a command prompt
+with simulated output
+on two lines
+$ followed by another command
+and some more output
+C:\> something else
+from Windows?
+$ </pre>
+  </code>
+<p style='height: 100vh;'>&nbsp;</p>
+
+  <code class='terminal'>
+    <pre>$ find / -name 'nemo'
+ </pre>
+</code>
+
+<p style='height: 100vh;'>&nbsp;</p>
+
+<code class='terminal'>
+<pre>C:\> vagrant up
+Bringing machine 'default' up with 'virtualbox' provider...
+==> default: Removing hosts
+==> default: Checking if box 'ubuntu/trusty64' is up to date...
+==> default: VirtualBox VM is already running.
+C:\> vagrant ssh
+Welcome to Ubuntu 14.04.1 LTS (GNU/Linux 3.13.0-39-generic x86_64)
+ 
+Last login: Fri Jul 15 21:48:45 2016 from ip-10-0-2-2.ec2.internal
+$ whoami
+speaker
+$ </pre>
+</code>
+
+<p style='height: 100vh;'>&nbsp;</p>
+
+<code class='terminal'>
+<pre>$ sudo whoami
+[sudo] password for speaker: &#8203;     
+root
+$ </pre>
+</code>
+
+
+<p style='height: 100vh;'>&nbsp;</p>
+
+  <code class='terminal' style='font-size: 2em;'>
+      <pre>$ cat ./shell-flow.txt
+                   +-------+
+"$"           <--- |       |                                    +--------+
+"ls ~/movies" ---> |       | -> "/bin/ls /home/sally/movies" -> |        |
+                   | shell |                                    | system |
+"hellboy.mp4" <--- |       | <------- "hellboy.mp4" <---------- |        |
+"$"           <--- |       |                                    +--------+
+                   +-------+
+$ </pre>
+  </code>
+
+  </main>
+  <script src='app.js' /></script>
+  </body>
+</html>
