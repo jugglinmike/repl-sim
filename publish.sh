@@ -15,7 +15,7 @@ while true; do
   read -p "Ready to publish (y/n)? " yn
   case $yn in
     [Yy]* )
-      git push upstream $tag;
+      git push origin $tag;
       npm publish;
       break;;
     [Nn]* ) exit;;
