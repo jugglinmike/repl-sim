@@ -11,7 +11,7 @@ main {
   padding: 1em;
 }
 
-code {
+pre {
   position: relative;
   margin: 0;
   padding: 0.7em 1em;
@@ -23,10 +23,6 @@ code {
 
   font-size: 3em;
   overflow-x: auto;
-}
-pre {
-  background-color: inherit;
-  margin: 0;
 }
 code button {
   position: absolute;

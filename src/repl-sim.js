@@ -2,8 +2,8 @@ define(function(require, exports, module) {
   'use strict';
   var pause = require('./util/pause');
   var repeat = require('./util/repeat');
-  var blinkElement = require('./util/blink-element');
   var innerText = require('./util/inner-text');
+  var blinkElement = require('./util/blink-element');
   var defaults = {
     promptRe: /^\$ /,
     cursorPeriod: 700,
@@ -14,6 +14,9 @@ define(function(require, exports, module) {
     },
     keystrokeDelay: function() {
       return 50 + Math.random() * 100;
+    },
+    prepText: function(text) {
+      return text;
     },
     repeatCount: 1
   };
@@ -35,22 +38,18 @@ define(function(require, exports, module) {
   function animate(el, cursorNode, readDelay, submitDelay, keystrokeDelay, lines) {
     el.innerHTML = '';
     el.appendChild(cursorNode);
-    var stopNode = document.createElement('button');
-    innerText.set(stopNode, 'Stop');
-    el.appendChild(stopNode);
 
     return lines.reduce(function(previous, line, idx) {
       return previous.then(function() {
-        var div = document.createElement('pre');
+        var div = document.createTextNode('');
         el.insertBefore(div, cursorNode);
         if ('output' in line) {
           cursorNode.style.display = 'none';
-          innerText.set(div, line.output);
+          div.textContent = line.output + '\n';
           return;
         }
         cursorNode.style.display = 'inline';
-        innerText.set(div, line.prompt);
-        div.style.display = 'inline';
+        div.textContent = line.prompt;
         return pause(readDelay)
           .then(function() {
             return typeIt(div, line.input, keystrokeDelay);
@@ -59,8 +58,8 @@ define(function(require, exports, module) {
             return pause(submitDelay);
           })
           .then(function() {
-            if (idx < lines.length -1 ) {
-              div.style.display = 'block';
+            if (idx < lines.length - 1) {
+              div.textContent = div.textContent + '\n';
             }
           });
       });
@@ -73,6 +72,7 @@ define(function(require, exports, module) {
     var submitDelay = options && options.submitDelay;
     var getHeight = options && options.getHeight || defaults.getHeight;
     var keystrokeDelay = options && options.keystrokeDelay || defaults.keystrokeDelay;
+    var prepText = options && options.prepText || defaults.prepText;
 
     if (typeof submitDelay !== 'number') {
       submitDelay = defaults.submitDelay;
@@ -85,7 +85,12 @@ define(function(require, exports, module) {
     if (typeof repeatCount !== 'number') {
       repeatCount = defaults.repeatCount;
     }
-    var code = innerText.get(el) || '';
+    var code = el.getAttribute('data-repl-sim');
+    if (code === null) {
+      el.style.height = getHeight(el) + 'px';
+      code = prepText(innerText(el) || '');
+      el.setAttribute('data-repl-sim', code);
+    }
     var lines = code.split('\n');
 
     var cursorNode = document.createElement('span');
@@ -108,7 +113,6 @@ define(function(require, exports, module) {
       };
     });
 
-    el.style.height = getHeight(el) + 'px';
     repeat(repeatCount, function() {
         return animate(el, cursorNode, readDelay, submitDelay, keystrokeDelay, lines2);
       });
