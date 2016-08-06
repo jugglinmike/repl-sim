@@ -1,13 +1,13 @@
 #!/bin/bash -e
 
-tag=$(node -p 'require("./package.json").version')
+tag=v$(node -p 'require("./package.json").version')
 
 npm test
 npm run build
 
 git checkout --detach
 git add *.js *.map
-git commit --message "Release v.$tag"
+git commit --message "Release $tag"
 git tag $tag
 
 while true; do
