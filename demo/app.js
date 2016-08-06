@@ -1,4 +1,4 @@
-require(['../src/repl-sim'], function(typer) {
+require(['../src/repl-sim'], function(ReplSim) {
   'use strict';
   var terminals = document.getElementsByClassName('terminal');
   var config = {
@@ -11,6 +11,8 @@ require(['../src/repl-sim'], function(typer) {
   var idx;
 
   for (idx = 0; idx < terminals.length; ++idx) {
-    typer(terminals[idx], config);
+    (function play(sim) {
+      sim.play().then(play.bind(null, sim));
+    }(new ReplSim(terminals[idx], config)));
   }
 });

@@ -1,9 +1,8 @@
 define(function(require, exports, module) {
   'use strict';
+  var Cursor = require('./cursor');
   var pause = require('./util/pause');
-  var repeat = require('./util/repeat');
   var innerText = require('./util/inner-text');
-  var blinkElement = require('./util/blink-element');
   var defaults = {
     promptRe: /^\$ /,
     cursorPeriod: 700,
@@ -17,88 +16,36 @@ define(function(require, exports, module) {
     },
     prepText: function(text) {
       return text;
-    },
-    repeatCount: 1
+    }
   };
-  function typeIt(el, text, keystrokeDelay) {
-    var letters = text.split('');
 
-    return letters.reduce(function(previous, letter) {
-      return previous.then(function() {
-          return new Promise(function(resolve) {
-              setTimeout(function() {
-                el.textContent += letter;
-                resolve();
-              }, keystrokeDelay());
-            });
-        });
-    }, Promise.resolve());
-  }
+  function Simulator(el, options) {
+    this.el = el;
 
-  function animate(el, cursorNode, readDelay, submitDelay, keystrokeDelay, lines) {
-    el.innerHTML = '';
-    el.appendChild(cursorNode);
-
-    return lines.reduce(function(previous, line, idx) {
-      return previous.then(function() {
-        var div = document.createTextNode('');
-        el.insertBefore(div, cursorNode);
-        if ('output' in line) {
-          cursorNode.style.display = 'none';
-          div.textContent = line.output + '\n';
-          return;
-        }
-        cursorNode.style.display = 'inline';
-        div.textContent = line.prompt;
-        return pause(readDelay)
-          .then(function() {
-            return typeIt(div, line.input, keystrokeDelay);
-          })
-          .then(function() {
-            return pause(submitDelay);
-          })
-          .then(function() {
-            if (idx < lines.length - 1) {
-              div.textContent = div.textContent + '\n';
-            }
-          });
-      });
-    }, Promise.resolve());
-  }
-
-  function terminal(el, options) {
+    this.submitDelay = options && options.submitDelay;
+    this.keystrokeDelay = options && options.keystrokeDelay || defaults.keystrokeDelay;
     var promptRe = options && options.promptRe || defaults.promptRe;
-    var cursorPeriod = options && options.cursorPeriod || defaults.cursorPeriod;
-    var submitDelay = options && options.submitDelay;
-    var getHeight = options && options.getHeight || defaults.getHeight;
-    var keystrokeDelay = options && options.keystrokeDelay || defaults.keystrokeDelay;
     var prepText = options && options.prepText || defaults.prepText;
+    var cursorPeriod = options && options.cursorPeriod || defaults.cursorPeriod;
+    var getHeight = options && options.getHeight || defaults.getHeight;
 
-    if (typeof submitDelay !== 'number') {
-      submitDelay = defaults.submitDelay;
+    if (typeof this.submitDelay !== 'number') {
+      this.submitDelay = defaults.submitDelay;
     }
-    var readDelay = options && options.readDelay;
-    if (typeof readDelay !== 'number') {
-      readDelay = defaults.readDelay;
-    }
-    var repeatCount = options && options.repeatCount;
-    if (typeof repeatCount !== 'number') {
-      repeatCount = defaults.repeatCount;
+    this.readDelay = options && options.readDelay;
+    if (typeof this.readDelay !== 'number') {
+      this.readDelay = defaults.readDelay;
     }
     var code = el.getAttribute('data-repl-sim');
     if (code === null) {
-      el.style.height = getHeight(el) + 'px';
-      code = prepText(innerText(el) || '');
-      el.setAttribute('data-repl-sim', code);
+      this.el.style.height = getHeight(this.el) + 'px';
+      code = prepText(innerText(this.el) || '');
+      this.el.setAttribute('data-repl-sim', code);
     }
-    var lines = code.split('\n');
 
-    var cursorNode = document.createElement('span');
-    cursorNode.innerHTML = '&nbsp;';
-    cursorNode.style.backgroundColor = getComputedStyle(el).color;
-    blinkElement(cursorNode, cursorPeriod);
+    this._cursor = new Cursor(getComputedStyle(this.el).color, cursorPeriod);
 
-    var lines2 = lines.map(function(line) {
+    this._lines = code.split('\n').map(function(line) {
       var match = line.match(promptRe);
       var prompt;
 
@@ -112,10 +59,93 @@ define(function(require, exports, module) {
         input: line.substring(prompt.length, line.length) || ''
       };
     });
-
-    repeat(repeatCount, function() {
-        return animate(el, cursorNode, readDelay, submitDelay, keystrokeDelay, lines2);
-      });
   }
-  module.exports = terminal;
+
+  Simulator.prototype.destroy = function() {
+    if (this._destroyed) {
+      throw new Error('ReplSim: `destroy` called on destroyed instance');
+    }
+
+    this._cursor.hide();
+    this._destroyed = true;
+  };
+
+  Simulator.prototype.play = function() {
+    if (this._destroyed) {
+      throw new Error('ReplSim: `play` called on destroyed instance');
+    }
+
+    this.el.textContent = '';
+    this.el.appendChild(this._cursor.el);
+
+    return this._lines.reduce(function(previous, line, idx) {
+      return previous.then(function() {
+        var node;
+        if (this._destroyed) {
+          return;
+        }
+        node = document.createTextNode('');
+        this.el.insertBefore(node, this._cursor.el);
+        if ('output' in line) {
+          this._cursor.hide();
+          node.textContent = line.output + '\n';
+          return;
+        }
+        this._cursor.show();
+        node.textContent = line.prompt;
+        return pause(this.readDelay)
+          .then(function() {
+            if (this._destroyed) {
+              return;
+            }
+
+            return this._typeLine(node, line.input);
+          }.bind(this))
+          .then(function() {
+            if (this._destroyed) {
+              return;
+            }
+
+            return pause(this.submitDelay);
+          }.bind(this))
+          .then(function() {
+            if (this._destroyed) {
+              return;
+            }
+            if (idx < this._lines.length - 1) {
+              node.textContent += '\n';
+            }
+          }.bind(this));
+      }.bind(this));
+    }.bind(this), Promise.resolve());
+  };
+
+  Simulator.prototype._typeLine = function(node, text) {
+    var letters;
+
+    if (this._destroyed) {
+      return;
+    }
+
+    letters = text.split('');
+
+    return letters.reduce(function(previous, letter) {
+      return previous.then(function() {
+          if (this._destroyed) {
+            return;
+          }
+
+          return new Promise(function(resolve) {
+              setTimeout(function() {
+                if (!this._destroyed) {
+                  node.textContent += letter;
+                }
+                resolve();
+              }.bind(this), this.keystrokeDelay());
+            }.bind(this));
+        }.bind(this));
+    }.bind(this), Promise.resolve());
+  };
+
+  module.exports = Simulator;
 });

@@ -6,8 +6,9 @@ A utility for animating text in HTML documents to simulate REPL interactions.
 
 ReplSim is defined using UMD, so it may be included in AMD environments,
 CommonJS environments, or as a property of the global scope. The exported value
-is a function that is intended to be invoked with a DOM node containing
-REPL-like text and an optional object of settings to modify the behavior.
+is a constructor function that is intended to be invoked with a DOM node
+containing REPL-like text and an optional object of settings to modify the
+behavior.
 
 ```js
 var el = document.getElementById('code-example');
@@ -41,13 +42,29 @@ var options = {
   // dynamic values, such as those produced by `Math.random`.
   keystrokeDelay: function() {
     return 50 + Math.random() * 100;
-  },
-
-  // Number of times to repeat the animation. Supports the value `Infinity`.
-  repeatCount: 1
+  }
 };
 
-replSim(el, options);
+var rs = new ReplSim(el, options);
+rs.play();
+```
+
+Instances support the following methods:
+
+- `play()` - begin the animation; returns a Promise which is fulfilled when the
+  animation is complete
+- `destroy()` - cancel animation; useful when the containing markup must be
+  removed from the DOM; the animation cannot be re-started after this method is
+  invoked
+
+To repeat animation indefinitely, chain off of the Promise returned by `play`,
+e.g.
+
+```js
+var rs = new ReplSim(el, options);
+(function repeat() {
+  rs.play().then(repeat);
+}());
 ```
 
 ## License

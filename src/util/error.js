@@ -6,6 +6,6 @@ define(function(require, exports, module) {
     if (typeof console !== 'object' || typeof console.error !== 'function') {
       return;
     }
-    console.error('typer.js: ' + msg);
+    console.error('ReplSim: ' + msg);
   };
 });
