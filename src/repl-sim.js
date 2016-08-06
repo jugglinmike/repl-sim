@@ -23,7 +23,8 @@ define(function(require, exports, module) {
     this.el = el;
 
     this.submitDelay = options && options.submitDelay;
-    this.keystrokeDelay = options && options.keystrokeDelay || defaults.keystrokeDelay;
+    this.keystrokeDelay = options && options.keystrokeDelay ||
+      defaults.keystrokeDelay;
     var promptRe = options && options.promptRe || defaults.promptRe;
     var prepText = options && options.prepText || defaults.prepText;
     var cursorPeriod = options && options.cursorPeriod || defaults.cursorPeriod;
